@@ -11,11 +11,16 @@ import random
 
 class Model(object):
     def __init__(self, input_width, input_height, number_of_actions,
-                 batch_size=1, channels=4, discount_factor=0.99):
+                 batch_size=500, channels=4, discount_factor=0.99):
         self.input_width = input_width
         self.input_height = input_height
         self.channels = channels
         self.batch_size = batch_size
+
+        self.states = np.zeros((batch_size, 
+                                channels,
+                                input_width,
+                                input_height))
     
         self.number_of_actions = number_of_actions
         self.discount_factor = discount_factor
@@ -93,7 +98,7 @@ class Model(object):
             (self.batch_size,
              l_dense.get_output_shape()[0],
              l_dense.get_output_shape()[1]))
-        print l_reshape.get_output_shape()
+
         l_LSTM1 = lasagne.layers.LSTMLayer(
             l_reshape,
             num_units=102,
@@ -108,17 +113,30 @@ class Model(object):
 
         return l_out
 
-    def train_step(self, pre_state, action,
-                   reward, post_state, game_length):
-        self.batch_size = game_length
-        qvalues = self.predict(pre_state)[0]
-        max_qvalue = np.max(self.predict(post_state))
+    def train_step(self, input_states, actions, rewards):
+
+        # self.batch_size = len(states)
+        # self.l_out = self.build()
+
+        print self.states.shape
+        print len(input_states), len(actions)
+
+        self.states[:len(actions), :, :, :] = input_states
+
+        qvalues = self.predict(self.states)[0]
+        max_qvalues = np.max(qvalues, axis=1)
+        max_qvalues = np.roll(max_qvalues, -1)
+        max_qvalues[-1] = 0
 
         qvalues_reinforced = qvalues.copy()
-        qvalues_reinforced[action] = reward + \
-                                     self.discount_factor * max_qvalue
 
-        self.train(pre_state, qvalues_reinforced)
+        for i, action in enumerate(actions):
+            qvalues_reinforced[i][action] = rewards[i] + \
+                self.discount_factor * max_qvalues[i]
+
+
+        self.train(self.states, qvalues_reinforced)
+        self.states.fill(0)
 
     def greedy_step(self, state, epsilon):
         if random.uniform(0, 1) < epsilon:

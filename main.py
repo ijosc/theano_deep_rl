@@ -15,7 +15,7 @@ class Main(object):
 
     frame_size = 84
     state_length = 4
-    batch_size = 1
+    batch_size = 500
 
     discount_factor = 0.9
     epsilon_frames = 1000000.0
@@ -74,11 +74,12 @@ class Main(object):
             current_state[0, -1, :, :] = first_frame.copy()
 
         game_score = 0
-        game_length = 0
+        actions = []
+        rewards = []
+        states = []
 
         while frames_played < nr_frames:
             frames_played += 1
-            game_length += 1
 
             if train:
                 epsilon = self.compute_epsilon(self.total_frames_trained)
@@ -91,17 +92,25 @@ class Main(object):
             reward = self.compute_reward(points)
             game_score += points
 
-            pre_state = current_state.copy()
-            current_state = np.roll(current_state, -1, 1) 
-            current_state[0, -1, :, :] = next_frame
-
             if train and 'LTRCN' not in globals():
                 self.total_frames_trained += 1
+
+                pre_state = current_state.copy()
+                current_state = np.roll(current_state, -1, 1) 
+                current_state[0, -1, :, :] = next_frame
+
                 self.net.train_step(
                     pre_state,
                     action,
                     reward,
                     current_state)
+
+            if train and 'LTRCN' in globals():
+                actions.append(action)
+                rewards.append(reward)
+                states.append(current_state[0, :, :, :])
+                current_state = np.roll(current_state, -1, 1) 
+                current_state[0, -1, :, :] = next_frame
 
             if self.ale.game_over:
                 print "    Game over, score = %d" % game_score
@@ -109,17 +118,17 @@ class Main(object):
                 game_score = 0
 
                 self.ale.end_game()
-                
+
                 if 'LTRCN' in globals():
-                    print 'now training with', game_length
                     self.total_frames_trained += 1
                     self.net.train_step(
-                        pre_state,
-                        action,
-                        reward,
-                        current_state,
-                        game_length)
-                    game_length = 0
+                        states,
+                        actions,
+                        rewards)
+
+                    actions = []
+                    rewards = []
+                    states = []
 
                 first_frame = self.ale.new_game()
                 current_state = np.roll(current_state, -1, 1)
