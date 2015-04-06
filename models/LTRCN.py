@@ -34,7 +34,10 @@ class Model(object):
         qvalues_reinforced = T.matrix()
 
         output = self.l_out.get_output(state)
-        self.predict = theano.function([state], output)
+        self.predict = theano.function(
+            [state],
+            output,
+            allow_input_downcast=True)
 
         objective = lasagne.objectives.Objective(
             self.l_out,
@@ -54,7 +57,8 @@ class Model(object):
         self.train = theano.function(
             inputs=[state, qvalues_reinforced],
             outputs=cost,
-            updates=updates)
+            updates=updates,
+            allow_input_downcast=True)
 
     def build(self):
         l_in = lasagne.layers.InputLayer(
