@@ -107,6 +107,7 @@ class Main(object):
                     current_state)
             else:
                 states.append(current_state[0, :, :, :])
+                if len(states)>self.batch_size: states.pop(0)
                 action = self.net.greedy_step(states, epsilon)
 
                 points, next_frame = self.ale.move(action)
