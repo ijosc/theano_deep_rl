@@ -9,7 +9,9 @@ import theano
 import theano.tensor as T
 import random
 
+
 class Model(object):
+
     def __init__(self, input_width, input_height, number_of_actions,
                  batch_size=500, channels=4, discount_factor=0.99):
         self.input_width = input_width
@@ -17,11 +19,11 @@ class Model(object):
         self.channels = channels
         self.batch_size = batch_size
 
-        self.states = np.zeros((batch_size, 
+        self.states = np.zeros((batch_size,
                                 channels,
                                 input_width,
                                 input_height))
-    
+
         self.number_of_actions = number_of_actions
         self.discount_factor = discount_factor
 
@@ -29,7 +31,7 @@ class Model(object):
 
         state = T.tensor4()
         qvalues = T.vector()
-        qvalues_reinforced = T.vector()
+        qvalues_reinforced = T.matrix()
 
         output = self.l_out.get_output(state)
         self.predict = theano.function([state], output)
@@ -43,10 +45,10 @@ class Model(object):
         all_params = lasagne.layers.get_all_params(self.l_out)
 
         updates = lasagne.updates.rmsprop(
-            cost, 
-            all_params, 
-            learning_rate=0.0001, 
-            rho=0.9, 
+            cost,
+            all_params,
+            learning_rate=0.0001,
+            rho=0.9,
             epsilon=1e-06)
 
         self.train = theano.function(
@@ -61,7 +63,7 @@ class Model(object):
                 self.channels,
                 self.input_width,
                 self.input_height),
-            )
+        )
 
         l_conv1 = lasagne.layers.Conv2DLayer(
             l_in,
@@ -93,20 +95,25 @@ class Model(object):
             nonlinearity=lasagne.nonlinearities.rectify,
             W=lasagne.init.Normal(std=0.1))
 
-        l_reshape = lasagne.layers.ReshapeLayer(
+        l_reshape_1 = lasagne.layers.ReshapeLayer(
             l_dense,
-            (self.batch_size,
+            (1,
              l_dense.get_output_shape()[0],
              l_dense.get_output_shape()[1]))
 
         l_LSTM1 = lasagne.layers.LSTMLayer(
-            l_reshape,
+            l_reshape_1,
             num_units=102,
             peepholes=True,
             learn_init=True)
 
-        l_out = lasagne.layers.DenseLayer(
+        l_reshape_2 = lasagne.layers.ReshapeLayer(
             l_LSTM1,
+            (l_LSTM1.get_output_shape()[1],
+             l_LSTM1.get_output_shape()[2]))
+
+        l_out = lasagne.layers.DenseLayer(
+            l_reshape_2,
             num_units=self.number_of_actions,
             nonlinearity=lasagne.nonlinearities.linear,
             W=lasagne.init.Normal(std=0.1))
@@ -114,16 +121,9 @@ class Model(object):
         return l_out
 
     def train_step(self, input_states, actions, rewards):
+        self.states[:len(input_states), :, :, :] = input_states
 
-        # self.batch_size = len(states)
-        # self.l_out = self.build()
-
-        print self.states.shape
-        print len(input_states), len(actions)
-
-        self.states[:len(actions), :, :, :] = input_states
-
-        qvalues = self.predict(self.states)[0]
+        qvalues = self.predict(self.states)
         max_qvalues = np.max(qvalues, axis=1)
         max_qvalues = np.roll(max_qvalues, -1)
         max_qvalues[-1] = 0
@@ -134,15 +134,15 @@ class Model(object):
             qvalues_reinforced[i][action] = rewards[i] + \
                 self.discount_factor * max_qvalues[i]
 
-
         self.train(self.states, qvalues_reinforced)
         self.states.fill(0)
 
-    def greedy_step(self, state, epsilon):
+    def greedy_step(self, input_states, epsilon):
         if random.uniform(0, 1) < epsilon:
             action = random.choice(range(self.number_of_actions))
         else:
-            action = np.argmax(self.predict(state))
+            self.states[:len(input_states), :, :, :] = input_states
+            action = np.argmax(self.predict(self.states)[-1])
+            self.states.fill(0)
 
         return action
-

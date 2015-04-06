@@ -10,7 +10,8 @@ import random
 import sys
 
 from signal import signal, SIGPIPE, SIG_DFL
-signal(SIGPIPE,SIG_DFL) 
+signal(SIGPIPE, SIG_DFL)
+
 
 class ALE:
     all_actions = []
@@ -25,7 +26,7 @@ class ALE:
     fin = ""
     fout = ""
     preprocessor = None
-    
+
     def __init__(self, valid_actions, run_id, display_screen, skip_frames, game_ROM):
         """
         Initialize ALE class. Creates the FIFO pipes, launches ./ale and does the "handshake" phase of communication
@@ -45,7 +46,10 @@ class ALE:
         os.mkfifo("ale_fifo_in_%i" % self.run_id)
 
         #: launch ALE with appropriate commands in the background
-        command='./ale/ale -max_num_episodes 0 -game_controller fifo_named -disable_colour_averaging true -run_length_encoding false -frame_skip '+str(self.skip_frames) + ' -run_id ' + str(self.run_id) + ' -display_screen '+self.display_screen+" "+self.game_ROM+" &"
+        command = './ale/ale -max_num_episodes 0 -game_controller fifo_named -disable_colour_averaging true -run_length_encoding false -frame_skip ' + \
+            str(self.skip_frames) + ' -run_id ' + str(self.run_id) + \
+            ' -display_screen ' + self.display_screen + \
+            " " + self.game_ROM + " &"
         os.system(command)
 
         os.system('ls -l ale_fifo_out_%i' % self.run_id)
@@ -81,7 +85,8 @@ class ALE:
         self.current_points = int(episode_info.split(",")[1])
 
         #: send the fist command
-        #  first command has to be 1,0 or 1,1, because the game starts when you press "fire!",
+        # first command has to be 1,0 or 1,1, because the game starts when you
+        # press "fire!",
         self.fout.write("1, 19\n")
         self.fout.flush()
         self.fin.readline()
@@ -94,13 +99,13 @@ class ALE:
         """
         #: tell the memory that we lost
         # self.memory.add_last() # this will be done in Main.py
-        
+
         #: send reset command to ALE
         self.fout.write("45,45\n")
         self.fout.flush()
-        self.game_over = False  # just in case, but new_game should do it anyway
+        # just in case, but new_game should do it anyway
+        self.game_over = False
 
-    
     def move(self, action_index):
         """
         Sends action to ALE and reads responds
@@ -110,15 +115,15 @@ class ALE:
         action = self.actions[action_index]
 
         #: Write and send to ALE stuff
-        
-        self.fout.write(str(action)+","+str(19)+"\n")
+
+        self.fout.write(str(action) + "," + str(19) + "\n")
         # self.fout.write(str(action)+"\n")
         self.fout.flush()
         #: Read from ALE
         line = self.fin.readline()
         try:
             self.next_image, episode_info = line[:-2].split(":")
-            #print "got correct info from ALE: image + ", episode_info
+            # print "got correct info from ALE: image + ", episode_info
         except:
             print "got an error in reading stuff from ALE"
             traceback.print_exc()
