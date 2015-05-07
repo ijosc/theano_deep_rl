@@ -1,4 +1,5 @@
 from sacred import Experiment
+from sacred.observers import MongoObserver
 from models import *
 
 import os
@@ -9,15 +10,23 @@ ex = Experiment('LTRCN')
 def my_config():
     game_name = 'breakout'
     model_name = 'DQN'
+
     n_epochs = 4
     training_frames = 3
     testing_frames = 0
+
     run_id = 1
+    db_user = 'name'
+    db_password = 'pw'
 
 @ex.automain
 def ex_main(game_name, model_name,
             n_epochs, training_frames, testing_frames,
-            run_id):
+            run_id, db_user, db_password):
+
+ex.observers.append(MongoObserver.create(
+    url='mongodb://'+db_user+':'+dbpassword+'@ds031932.mongolab.com:31932',
+    db_name='mt_experiments'))
 
     if os.path.exists('ale_fifo_in_%i' % run_id):
         os.remove('ale_fifo_in_%i' % run_id)
