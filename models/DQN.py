@@ -132,16 +132,11 @@ class Model(object):
     def train_step(self, minibatch):
 
         prestates, actions, rewards, poststates = minibatch
-        print actions
 
         qvalues = self.predict(prestates)
         post_qvalues = self.predict(poststates)
-
-        print post_qvalues.shape
         
         max_qvalues = np.max(post_qvalues,axis=1)
-        print max_qvalues.shape
-
 
         for i, action in enumerate(actions):
             qvalues[i][action] = rewards[i] + \

@@ -39,7 +39,7 @@ class Memory:
         self.size = n
         self.screens = np.empty((n, 1, 84, 84), dtype=np.float32)
         self.actions = np.zeros((n,), dtype=np.uint8)
-        self.rewards = np.empty((n,), dtype=np.uint8)
+        self.rewards = np.zeros((n,), dtype=np.uint8)
         self.time = np.empty((n,), dtype=np.uint32)
         self.count = -1
 
