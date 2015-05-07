@@ -32,7 +32,7 @@ def ex_main(game_name, model_name,
             batch_size=100,
             discount_factor=0.99)
     elif model_name == 'DQN':
-        model = DQN_2.Model(
+        model = DQN.Model(
             run_id,
             game_name,
             batch_size=32,
