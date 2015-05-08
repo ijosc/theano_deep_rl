@@ -200,7 +200,8 @@ class Model(object):
 
         while frames_played < nr_frames:
             frames_played += 1
-
+            self.total_frames_trained += 1
+            
             epsilon = self.compute_epsilon(self.total_frames_trained)
 
             states.append(current_state[0, :, :, :])
@@ -217,7 +218,7 @@ class Model(object):
             current_state[0, -1, :, :] = next_frame
 
             if frames_played % self.batch_size == 0:
-                self.total_frames_trained += 1
+
                 max_qvalues.append(self.train_step(
                     states,
                     actions,
