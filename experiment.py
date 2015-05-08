@@ -28,7 +28,7 @@ def my_config():
 @ex.automain
 def ex_main(game_name, model_name,
             n_epochs, training_frames, testing_frames,
-            run_id, db_user, db_password):
+            run_id):
 
     if os.path.exists('ale_fifo_in_%i' % run_id):
         os.remove('ale_fifo_in_%i' % run_id)
