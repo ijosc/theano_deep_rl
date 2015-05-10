@@ -40,7 +40,7 @@ def ex_main(game_name, model_name,
         model = LTRCN.Model(
             run_id,
             game_name,
-            batch_size=128,
+            batch_size=512,
             discount_factor=0.99)
     elif model_name == 'DQN':
         model = DQN.Model(
@@ -62,14 +62,14 @@ def ex_main(game_name, model_name,
                 ex.info['max_qvalues'] = [sum(max_qvalues)/len(max_qvalues)]
 
             if 'training_scores' in ex.info and len(training_scores) is not 0:
-                ex.info['training_scores'].append(sum(training_scores)/len(training_scores))
+                ex.info['training_scores'].append(float(sum(training_scores))/len(training_scores))
             elif 'training_scores' not in ex.info and len(training_scores) is not 0:
-                ex.info['training_scores'] = [sum(training_scores)/len(training_scores)]
+                ex.info['training_scores'] = [float(sum(training_scores))/len(training_scores)]
 
         if testing_frames > 0:
             test_scores = model.test(testing_frames)
 
             if 'test_scores' in ex.info and len(test_scores) is not 0:
-                ex.info['test_scores'].append(sum(test_scores)/len(test_scores))
+                ex.info['test_scores'].append(float(sum(test_scores))/len(test_scores))
             elif 'test_scores' not in ex.info and len(test_scores) is not 0:
-                ex.info['test_scores'] = [sum(test_scores)/len(test_scores)]
+                ex.info['test_scores'] = [float(sum(test_scores))/len(test_scores)]

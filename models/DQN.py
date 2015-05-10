@@ -73,7 +73,7 @@ class Model(object):
         updates = lasagne.updates.rmsprop(
             cost,
             all_params,
-            learning_rate=0.00001,
+            learning_rate=0.000001,
             rho=0.9,
             epsilon=1e-06)
 
@@ -105,7 +105,7 @@ class Model(object):
             filter_size=(4, 4),
             strides=(2, 2),
             nonlinearity=lasagne.nonlinearities.rectify,
-            W=lasagne.init.Normal(std=0.01))
+            W=lasagne.init.Normal(std=0.001))
 
         l_conv3 = lasagne.layers.Conv2DLayer(
             l_conv2,
@@ -203,7 +203,6 @@ class Model(object):
             max_qvalues.append(self.train_step(minibatch))
 
             if self.ale.game_over:
-                print "    Game over, score = %d" % game_score
                 game_scores.append(game_score)
                 game_score = 0
 

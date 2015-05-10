@@ -201,7 +201,7 @@ class Model(object):
         while frames_played < nr_frames:
             frames_played += 1
             self.total_frames_trained += 1
-            
+
             epsilon = self.compute_epsilon(self.total_frames_trained)
 
             states.append(current_state[0, :, :, :])
@@ -229,8 +229,6 @@ class Model(object):
                 states = []
 
             if self.ale.game_over:
-                print "    Game over, score = %d" % game_score
-                game_scores.append(game_score)
                 game_score = 0
 
                 self.ale.end_game()
