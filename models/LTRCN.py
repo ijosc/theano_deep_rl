@@ -15,12 +15,13 @@ from utils.game_actions import action_dict
 
 class Model(object):
 
-    def __init__(self, run_id, game_name,
+    def __init__(self, run_id, game_name, learning_rate,
                  batch_size=100, discount_factor=0.99):
 
         self.frame_size = 84
         self.channels = 4
         self.batch_size = batch_size
+        self.learning_rate = learning_rate
 
         self.discount_factor = discount_factor
         self.epsilon_frames = 1000000.0
@@ -69,7 +70,7 @@ class Model(object):
         updates = lasagne.updates.rmsprop(
             cost,
             all_params,
-            learning_rate=0.0001,
+            learning_rate=self.learning_rate,
             rho=0.9,
             epsilon=1e-06)
 
@@ -279,7 +280,6 @@ class Model(object):
             current_state[0, -1, :, :] = next_frame
 
             if self.ale.game_over:
-                print "    Game over, score = %d" % game_score
                 game_scores.append(game_score)
                 game_score = 0
 

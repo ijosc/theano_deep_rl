@@ -17,16 +17,18 @@ ex.observers.append(MongoObserver.create(
 @ex.config
 def my_config():
     game_name = 'breakout'
-    model_name = 'DQN'
+    model_name = 'LTRCN_gameover'
+    batch_size = 512
+    learning_rate = 0.0001
 
-    n_epochs = 10
-    training_frames = 50000
-    testing_frames = 1000
+    n_epochs = 2
+    training_frames = 300
+    testing_frames = 10
 
     run_id = 1
 
 @ex.automain
-def ex_main(game_name, model_name,
+def ex_main(game_name, model_name, batch_size, learning_rate,
             n_epochs, training_frames, testing_frames,
             run_id):
 
@@ -40,13 +42,22 @@ def ex_main(game_name, model_name,
         model = LTRCN.Model(
             run_id,
             game_name,
-            batch_size=512,
+            learning_rate,
+            batch_size=batch_size,
             discount_factor=0.99)
     elif model_name == 'DQN':
         model = DQN.Model(
             run_id,
             game_name,
-            batch_size=32,
+            learning_rate,
+            batch_size=batch_size,
+            discount_factor=0.99)
+    elif model_name == 'LTRCN_gameover':
+        model = LTRCN_gameover.Model(
+            run_id,
+            game_name,
+            learning_rate,
+            batch_size=batch_size,
             discount_factor=0.99)
 
 
