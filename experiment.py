@@ -4,39 +4,42 @@ from models import *
 
 import os
 import sys
+import cPickle as pickle
 
 ex = Experiment('LTRCN')
 
 db_user = 'sacred'
 db_password = 'sacred119'
 
-ex.observers.append(MongoObserver.create(
-    url='mongodb://'+db_user+':'+db_password+'@ds031932.mongolab.com:31932/mt_experiments',
-    db_name='mt_experiments'))
+# ex.observers.append(MongoObserver.create(
+#     url='mongodb://'+db_user+':'+db_password+'@ds031932.mongolab.com:31932/mt_experiments',
+#     db_name='mt_experiments'))
 
 @ex.config
 def my_config():
     game_name = 'breakout'
-    model_name = 'LTRCN_gameover'
-    batch_size = 512
-    learning_rate = 0.0001
+    model_name = 'LTRCN'
+    model_path = 'LTRCN_breakout_1.p'
+    total_frames_trained = 0
+    batch_size = 100
+    learning_rate = 0.01
 
     n_epochs = 2
-    training_frames = 300
-    testing_frames = 10
+    training_frames = 500
+    testing_frames = 100
 
     run_id = 1
 
 @ex.automain
-def ex_main(game_name, model_name, batch_size, learning_rate,
-            n_epochs, training_frames, testing_frames,
+def ex_main(game_name, model_name, model_path, batch_size, learning_rate,
+            n_epochs, training_frames, testing_frames, total_frames_trained,
             run_id):
 
     if os.path.exists('ale_fifo_in_%i' % run_id):
         os.remove('ale_fifo_in_%i' % run_id)
 
     if os.path.exists('ale_fifo_out_%i' % run_id):
-        os.remove('ale_fifo_out_%i' % run_id) 
+        os.remove('ale_fifo_out_%i' % run_id)
 
     if model_name == 'LTRCN':
         model = LTRCN.Model(
@@ -59,10 +62,15 @@ def ex_main(game_name, model_name, batch_size, learning_rate,
             learning_rate,
             batch_size=batch_size,
             discount_factor=0.99)
+    else:
+        print 'Model name is not recognized'
 
+    if model_path != '':
+        model.load_params(model_path)
+        model.total_frames_trained = total_frames_trained
 
     for epoch in range(n_epochs):
-        print "Epoch %d:" % (epoch+1)
+        print 'Epoch %d:' % (epoch+1)
 
         if training_frames > 0:
             training_scores, max_qvalues = model.train(training_frames)
@@ -77,6 +85,8 @@ def ex_main(game_name, model_name, batch_size, learning_rate,
             elif 'training_scores' not in ex.info and len(training_scores) is not 0:
                 ex.info['training_scores'] = [float(sum(training_scores))/len(training_scores)]
 
+            model.save_params('%s_%s_%d.p'%(model_name, game_name, run_id))
+
         if testing_frames > 0:
             test_scores = model.test(testing_frames)
 
@@ -84,3 +94,5 @@ def ex_main(game_name, model_name, batch_size, learning_rate,
                 ex.info['test_scores'].append(float(sum(test_scores))/len(test_scores))
             elif 'test_scores' not in ex.info and len(test_scores) is not 0:
                 ex.info['test_scores'] = [float(sum(test_scores))/len(test_scores)]
+
+    ex.info['Total Frames Trained'] = model.total_frames_trained

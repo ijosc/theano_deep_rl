@@ -93,30 +93,26 @@ class Model(object):
             num_filters=32,
             filter_size=(8, 8),
             strides=(4, 4),
-            nonlinearity=lasagne.nonlinearities.rectify,
-            W=lasagne.init.Normal(std=0.0001))
+            nonlinearity=lasagne.nonlinearities.rectify)
 
         l_conv2 = lasagne.layers.Conv2DLayer(
             l_conv1,
             num_filters=64,
             filter_size=(4, 4),
             strides=(2, 2),
-            nonlinearity=lasagne.nonlinearities.rectify,
-            W=lasagne.init.Normal(std=0.01))
+            nonlinearity=lasagne.nonlinearities.rectify)
 
         l_conv3 = lasagne.layers.Conv2DLayer(
             l_conv2,
             num_filters=64,
             filter_size=(3, 3),
             strides=(1, 1),
-            nonlinearity=lasagne.nonlinearities.rectify,
-            W=lasagne.init.Normal(std=0.01))
+            nonlinearity=lasagne.nonlinearities.rectify)
 
         l_dense = lasagne.layers.DenseLayer(
             l_conv3,
             num_units=512,
-            nonlinearity=lasagne.nonlinearities.rectify,
-            W=lasagne.init.Normal(std=0.1))
+            nonlinearity=lasagne.nonlinearities.rectify)
 
         l_reshape_1 = lasagne.layers.ReshapeLayer(
             l_dense,
@@ -138,17 +134,30 @@ class Model(object):
         l_out = lasagne.layers.DenseLayer(
             l_reshape_2,
             num_units=self.number_of_actions,
-            nonlinearity=lasagne.nonlinearities.linear,
-            W=lasagne.init.Normal(std=0.1))
+            nonlinearity=lasagne.nonlinearities.linear)
 
         return l_out
+
+
+    def save_params(self, file_name):
+        all_params = lasagne.layers.get_all_params(self.net)
+        all_params_arr = [p.get_value() for p in all_params]
+
+        pickle.dump(all_params_arr, open(file_name, 'wb'))
+
+    def load_params(self, file_name):
+        all_params_arr = pickle.load(open(file_name,'rb'))
+        all_params = lasagne.layers.get_all_params(self.net)
+
+        for new_param, old_param in zip(all_params_arr, all_params):
+	        old_param.set_value(new_param)
 
     def train_step(self, input_states, actions, rewards):
         self.states[:len(input_states), :, :, :] = input_states
 
         qvalues = self.predict(self.states)
 
-        
+
         max_qvalues_s = np.max(qvalues, axis=1)
         # we want to find the max q value for s':
 

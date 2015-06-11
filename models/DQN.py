@@ -74,7 +74,7 @@ class Model(object):
         updates = lasagne.updates.rmsprop(
             cost,
             all_params,
-            learning_rate=learning_rate,
+            learning_rate=self.learning_rate,
             rho=0.9,
             epsilon=1e-06)
 
@@ -98,7 +98,7 @@ class Model(object):
             filter_size=(8, 8),
             strides=(4, 4),
             nonlinearity=lasagne.nonlinearities.rectify,
-            W=lasagne.init.Normal(std=0.0001))
+            W=lasagne.init.GlorotUniform())
 
         l_conv2 = lasagne.layers.Conv2DLayer(
             l_conv1,
@@ -106,7 +106,7 @@ class Model(object):
             filter_size=(4, 4),
             strides=(2, 2),
             nonlinearity=lasagne.nonlinearities.rectify,
-            W=lasagne.init.Normal(std=0.001))
+            W=lasagne.init.GlorotUniform())
 
         l_conv3 = lasagne.layers.Conv2DLayer(
             l_conv2,
@@ -114,19 +114,19 @@ class Model(object):
             filter_size=(3, 3),
             strides=(1, 1),
             nonlinearity=lasagne.nonlinearities.rectify,
-            W=lasagne.init.Normal(std=0.01))
+            W=lasagne.init.GlorotUniform())
 
         l_dense = lasagne.layers.DenseLayer(
             l_conv3,
             num_units=512,
             nonlinearity=lasagne.nonlinearities.rectify,
-            W=lasagne.init.Normal(std=0.1))
+            W=lasagne.init.GlorotUniform())
 
         l_out = lasagne.layers.DenseLayer(
             l_dense,
             num_units=self.number_of_actions,
             nonlinearity=lasagne.nonlinearities.linear,
-            W=lasagne.init.Normal(std=0.1))
+            W=lasagne.init.GlorotUniform())
 
         return l_out
 
@@ -136,7 +136,7 @@ class Model(object):
 
         qvalues = self.predict(prestates)
         post_qvalues = self.predict(poststates)
-        
+
         max_qvalues = np.max(post_qvalues,axis=1)
 
         for i, action in enumerate(actions):
