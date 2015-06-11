@@ -19,7 +19,7 @@ db_password = 'sacred119'
 def my_config():
     game_name = 'breakout'
     model_name = 'LTRCN'
-    model_path = 'LTRCN_breakout_1.p'
+    model_path = ''
     total_frames_trained = 0
     batch_size = 100
     learning_rate = 0.01
