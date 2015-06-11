@@ -11,9 +11,9 @@ ex = Experiment('LTRCN')
 db_user = 'sacred'
 db_password = 'sacred119'
 
-# ex.observers.append(MongoObserver.create(
-#     url='mongodb://'+db_user+':'+db_password+'@ds031932.mongolab.com:31932/mt_experiments',
-#     db_name='mt_experiments'))
+ex.observers.append(MongoObserver.create(
+    url='mongodb://'+db_user+':'+db_password+'@ds031932.mongolab.com:31932/mt_experiments',
+    db_name='mt_experiments'))
 
 @ex.config
 def my_config():
