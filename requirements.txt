@@ -2,7 +2,8 @@ docopt==0.6.2
 -e git+https://github.com/skaae/nntools.git@11c384ba313f8af8e62f633242c329f1b9a21fd0#egg=Lasagne-master
 numpy==1.9.2
 Pillow==2.7.0
-sacred==0.6.2
+pymongo==3.0.1
+sacred==0.6.3
 scipy==0.15.1
 six==1.9.0
 Theano==0.7.0

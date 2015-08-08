@@ -8,27 +8,20 @@ import cPickle as pickle
 
 ex = Experiment('LTRCN')
 
-db_user = 'sacred'
-db_password = 'sacred119'
-
-ex.observers.append(MongoObserver.create(
-    url='mongodb://'+db_user+':'+db_password+'@ds031932.mongolab.com:31932/mt_experiments',
-    db_name='mt_experiments'))
-
 @ex.config
 def my_config():
-    game_name = 'breakout'
+    game_name = 'ms_pacman'
     model_name = 'LTRCN'
-    model_path = ''
+    model_path = 'LTRCN_ms_pacman_3.p'
     total_frames_trained = 0
-    batch_size = 100
-    learning_rate = 0.01
+    batch_size = 120
+    learning_rate = 0.001
 
     n_epochs = 2
-    training_frames = 500
-    testing_frames = 100
+    training_frames = 0
+    testing_frames = 200
 
-    run_id = 1
+    run_id = 99
 
 @ex.automain
 def ex_main(game_name, model_name, model_path, batch_size, learning_rate,
@@ -94,5 +87,7 @@ def ex_main(game_name, model_name, model_path, batch_size, learning_rate,
                 ex.info['test_scores'].append(float(sum(test_scores))/len(test_scores))
             elif 'test_scores' not in ex.info and len(test_scores) is not 0:
                 ex.info['test_scores'] = [float(sum(test_scores))/len(test_scores)]
-
-    ex.info['Total Frames Trained'] = model.total_frames_trained
+        print model.cost
+        print model.total_frames_trained
+        ex.info['Cost'] = model.cost
+        ex.info['Total Frames Trained'] = model.total_frames_trained

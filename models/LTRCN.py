@@ -16,17 +16,19 @@ from utils.game_actions import action_dict
 class Model(object):
 
     def __init__(self, run_id, game_name, learning_rate,
-                 batch_size=100, discount_factor=0.99):
+                 batch_size=150, discount_factor=0.99):
 
         self.frame_size = 84
         self.channels = 4
         self.batch_size = batch_size
         self.learning_rate = learning_rate
+        self.cost = []
 
         self.discount_factor = discount_factor
         self.epsilon_frames = 1000000.0
         self.total_frames_trained = 0
         self.test_epsilon = 0.05
+        print self.frame_size
 
         self.states = np.zeros((self.batch_size,
                                 self.channels,
@@ -38,7 +40,7 @@ class Model(object):
 
         self.ale = ALE(valid_actions,
                        run_id,
-                       display_screen="false",
+                       display_screen="true",
                        skip_frames=4,
                        game_ROM='ale/roms/' + game_name + '.bin')
 
@@ -93,26 +95,30 @@ class Model(object):
             num_filters=32,
             filter_size=(8, 8),
             strides=(4, 4),
-            nonlinearity=lasagne.nonlinearities.rectify)
+            nonlinearity=lasagne.nonlinearities.rectify,
+            W=lasagne.init.GlorotUniform(gain='relu'))
 
         l_conv2 = lasagne.layers.Conv2DLayer(
             l_conv1,
             num_filters=64,
             filter_size=(4, 4),
             strides=(2, 2),
-            nonlinearity=lasagne.nonlinearities.rectify)
+            nonlinearity=lasagne.nonlinearities.rectify,
+            W=lasagne.init.GlorotUniform(gain='relu'))
 
         l_conv3 = lasagne.layers.Conv2DLayer(
             l_conv2,
             num_filters=64,
             filter_size=(3, 3),
             strides=(1, 1),
-            nonlinearity=lasagne.nonlinearities.rectify)
+            nonlinearity=lasagne.nonlinearities.rectify,
+            W=lasagne.init.GlorotUniform(gain='relu'))
 
         l_dense = lasagne.layers.DenseLayer(
             l_conv3,
             num_units=512,
-            nonlinearity=lasagne.nonlinearities.rectify)
+            nonlinearity=lasagne.nonlinearities.rectify,
+            W=lasagne.init.GlorotUniform(gain='relu'))
 
         l_reshape_1 = lasagne.layers.ReshapeLayer(
             l_dense,
@@ -122,7 +128,7 @@ class Model(object):
 
         l_LSTM_1 = lasagne.layers.LSTMLayer(
             l_reshape_1,
-            num_units=102,
+            num_units=100,
             peepholes=True,
             learn_init=True)
 
@@ -170,7 +176,7 @@ class Model(object):
             qvalues_reinforced[i][action] = rewards[i] + \
                 self.discount_factor * max_qvalues_sPrime[i]
 
-        self.train_net(self.states, qvalues_reinforced)
+        self.cost.append(self.train_net(self.states, qvalues_reinforced))
         self.states.fill(0)
 
         return sum(max_qvalues_s)/len(max_qvalues_s)
@@ -247,7 +253,6 @@ class Model(object):
                 current_state[0, -1, :, :] = self.ale.new_game()
 
         self.ale.end_game()
-
         return game_scores, max_qvalues
 
 

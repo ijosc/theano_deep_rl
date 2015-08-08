@@ -1,38 +1,19 @@
-"""
-
-Memory stores game data and provides means work with it
-
-"""
-
-#TODO solve the issue of when we reach the limit of 1M samples, need to change add functions and solve the question of what to do on the border of new and old samples
-
 import numpy as np
 import random
 
 
 class Memory:
 
-    #: size of the memory                                                                                                                                                                                   
     size = None
-
-    #: N x 84 x 84 matrix, where N is the number of game steps we want to keep
     screens = None
-    
-    #: list of size N, stores actions agent took
     actions = None
-    
-    #: list of size N, stores rewards agent received upon doing an action
     rewards = None
-
-    #: list of size N, stores game internal time
     time = None
-
-    #: global index counter
     count = None
 
     def __init__(self, n):
         """
-        Initialize memory structure 
+        Initialize memory structure
         :type self: object
         @param n: the number of game steps we need to store
         """
@@ -154,7 +135,7 @@ class Memory:
     def update_PSminibatch(self, size):
         '''
         update the queue of prioritized states by checking whether the delta
-        of the new state is larger than the smallest delta in the current 
+        of the new state is larger than the smallest delta in the current
         queue. Delete state with smallest delta afterwards.
         '''
 
@@ -167,5 +148,5 @@ class Memory:
         rewards = np.empty((size), dtype=np.float64)
         poststates = np.empty((size,4,84,84), dtype = np.float64)
 
-        
+
         return [prestates, actions, rewards, poststates]

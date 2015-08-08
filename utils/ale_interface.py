@@ -1,7 +1,3 @@
-"""
-ALE class launches the ALE game and manages the communication with it
-"""
-
 import os
 import numpy as np
 from preprocessor import Preprocessor
@@ -28,14 +24,6 @@ class ALE:
     preprocessor = None
 
     def __init__(self, valid_actions, run_id, display_screen, skip_frames, game_ROM):
-        """
-        Initialize ALE class. Creates the FIFO pipes, launches ./ale and does the "handshake" phase of communication
-
-        @param display_screen: bool, whether to show the game on screen or not
-        @param skip_frames: int, number of frames to skip in the game emulator
-        @param game_ROM: location of the game binary to launch with ./ale
-        """
-
         self.display_screen = display_screen
         self.skip_frames = skip_frames
         self.game_ROM = game_ROM

@@ -1,16 +1,10 @@
-"""
-
-Preprocessor takes images from ALE and turns them into cropped, downscaled arrays of grayscale values.
-
-"""
-
 from PIL import Image
 import numpy as np
 
 class Preprocessor:
 
     grayscale_array = None
-    desired_image_size = 84         # the size of the new image will be desired_image_size x desired_image_size
+    desired_image_size = 84
 
     def __init__(self):
         """
@@ -33,7 +27,7 @@ class Preprocessor:
 
         # Map each element of the list to the corresponding gray value
         grays = np.asarray(map(lambda hex_val: arr[int(hex_val[1], 16)/2, int(hex_val[0], 16)], hexs))
-  
+
         # Turn the array into an image object and downscale
         img = Image.fromarray(grays.reshape((160, 160)))
         new_size = self.desired_image_size, self.desired_image_size
@@ -47,7 +41,7 @@ class Preprocessor:
         """
         Returns the (numpy) array that is used for mapping NTSC colors to grayscale values
         """
-        
+
         my_array = np.array(
             [[0.000000000000000000e+00, 4.533333333333333570e+01, 5.066666666666666430e+01, 5.200000000000000000e+01, 4.533333333333333570e+01, 7.066666666666667140e+01, 6.400000000000000000e+01, 5.066666666666666430e+01, 4.533333333333333570e+01, 4.933333333333333570e+01, 4.533333333333333570e+01, 3.466666666666666430e+01, 2.000000000000000000e+01, 2.533333333333333215e+01, 3.066666666666666785e+01, 3.600000000000000000e+01],
             [6.400000000000000000e+01, 7.200000000000000000e+01, 7.333333333333332860e+01, 7.600000000000000000e+01, 7.333333333333332860e+01, 9.600000000000000000e+01, 9.066666666666667140e+01, 7.733333333333332860e+01, 7.200000000000000000e+01, 7.600000000000000000e+01, 7.466666666666667140e+01, 6.400000000000000000e+01, 5.200000000000000000e+01, 5.733333333333333570e+01, 6.133333333333333570e+01, 6.533333333333332860e+01],
